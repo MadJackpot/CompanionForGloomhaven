@@ -1,7 +1,6 @@
 package com.awesome.dexter.companionforgloomhaven.Activities
 
 import android.app.Activity
-import kotlinx.android.synthetic.main.activity_character.*
 import android.os.Bundle
 
 /**

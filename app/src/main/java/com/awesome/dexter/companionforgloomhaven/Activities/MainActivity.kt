@@ -1,30 +1,39 @@
 package com.awesome.dexter.companionforgloomhaven.Activities
 
 import android.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.ListView
-import com.awesome.dexter.companionforgloomhaven.characters.*
+import android.support.v7.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.widget.ArrayAdapter
 import com.awesome.dexter.companionforgloomhaven.Adapters.CharacterAdapter
-import com.awesome.dexter.companionforgloomhaven.Database.GloomhavenDatabase
 import com.awesome.dexter.companionforgloomhaven.R
-import com.awesome.dexter.companionforgloomhaven.R.layout.activity_main
+import com.awesome.dexter.companionforgloomhaven.R.id.deleteAllCharacters
+import com.awesome.dexter.companionforgloomhaven.R.layout.*
+import com.awesome.dexter.companionforgloomhaven.R.menu.*
+import com.awesome.dexter.companionforgloomhaven.characters.Character
+import com.awesome.dexter.companionforgloomhaven.characters.Race
+import com.awesome.dexter.companionforgloomhaven.characters.getDisplayString
 import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.kotlinextensions.*
-import com.raizlabs.android.dbflow.sql.language.SQLite
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.dialog_new_character.view.*
 
 class MainActivity : AppCompatActivity() {
-        var characters: List<Character> = emptyList()
+        var characters = mutableListOf<Character>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(activity_main)
 
+        title = "Gloomhaven Companion"
+        setSupportActionBar(mainToolbar)
         FlowManager.init(this)
 
-        var characters = (select from Character::class).list
+        characters = (select from Character::class).list
         if (characters.isEmpty()) {
             characters.addAll(arrayOf(Character("Jonathan", Race.HumanScoundrel),
                     Character("Dan", Race.SavvasCragheart),
@@ -34,13 +43,61 @@ class MainActivity : AppCompatActivity() {
                     Character("Ryan", Race.InoxBrute)))
         }
 
-        val adapter: CharacterAdapter = CharacterAdapter(this, android.R.layout.simple_list_item_2, characters)
-        CharacterListView.adapter = adapter
+
+        attachCharacterAddListener()
+        UpdateCharacterList()
     }
 
     override fun onDestroy() {
         characters.processInTransactionAsync({it, dbWrapper-> it.save(dbWrapper)}, Transaction.Success{})
 
         super.onDestroy()
+    }
+
+    fun attachCharacterAddListener() {
+        addCharacterButton.setOnClickListener {
+            var builder = AlertDialog.Builder(this)
+            builder.setTitle("Add Character")
+                    .setCancelable(true)
+            var newCharSetup = LayoutInflater.from(this).inflate(dialog_new_character, null)
+            val raceStrings = Race.values().map{ it.getDisplayString() }
+            var characterArray = ArrayAdapter(this, android.R.layout.simple_spinner_item, raceStrings)
+            newCharSetup.raceSpinner.adapter = characterArray
+            builder.setView(newCharSetup)
+            builder.setPositiveButton("OK", {
+                _, _ ->
+                characters.add(Character(newCharSetup.newCharacterName.text.toString(), Race.values()[newCharSetup.raceSpinner.selectedItemPosition]))
+                UpdateCharacterList()
+            })
+
+            var alert = builder.create()
+            alert.show()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        if (menu != null)
+            MenuInflater(this).inflate(main_menu, menu)
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item == null)
+            return true
+
+        when (item.itemId) {
+            deleteAllCharacters -> {
+                characters.processInTransactionAsync({it, dbWrapper -> it.delete(dbWrapper)}, Transaction.Success{})
+                characters.clear()
+                UpdateCharacterList()
+            }
+        }
+
+        return true
+    }
+
+    private fun UpdateCharacterList(){
+        CharacterListView.adapter = CharacterAdapter(this, android.R.layout.simple_list_item_2, characters)
     }
 }
