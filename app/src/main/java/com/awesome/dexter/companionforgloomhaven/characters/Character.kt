@@ -17,17 +17,21 @@ open class Character(@Column var name: String = "", race: Race = Race.HumanScoun
     @Column var race = race.ordinal
 
     open fun getCharacterRace(): String {
-        return when (Race.values()[race]) {
-            Race.HumanScoundrel -> "Human Scoundrel"
-            Race.InoxBrute -> "Inox Brute"
-            Race.OrchidSpellweaver -> "Orchid Spellweaver"
-            Race.QuatrylTinkerer -> "Quatryl Tinkerer"
-            Race.SavvasCragheart -> "Savvas Cragheart"
-            Race.VermlingMindthief -> "Vermling Mindthief"
-        }
+        return Race.values()[race].getDisplayString()
     }
 
     class CharacterException(message: String) : Exception(message)
 }
 
 enum class Race {HumanScoundrel, InoxBrute, OrchidSpellweaver, QuatrylTinkerer, SavvasCragheart, VermlingMindthief}
+
+fun Race.getDisplayString(): String {
+    return when (this) {
+        Race.HumanScoundrel -> "Human Scoundrel"
+        Race.InoxBrute -> "Inox Brute"
+        Race.OrchidSpellweaver -> "Orchid Spellweaver"
+        Race.QuatrylTinkerer -> "Quatryl Tinkerer"
+        Race.SavvasCragheart -> "Savvas Cragheart"
+        Race.VermlingMindthief -> "Vermling Mindthief"
+    }
+}
