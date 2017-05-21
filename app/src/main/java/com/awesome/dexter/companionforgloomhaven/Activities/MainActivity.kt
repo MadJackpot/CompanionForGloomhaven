@@ -11,6 +11,7 @@ import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.kotlinextensions.*
 import com.raizlabs.android.dbflow.sql.language.SQLite
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
         var characters: List<Character> = emptyList()
@@ -23,9 +24,8 @@ class MainActivity : AppCompatActivity() {
 
         var characters = (select from Character::class).list
 
-        val listview = findViewById(R.id.CharacterListView) as ListView
         val adapter: CharacterAdapter = CharacterAdapter(this, android.R.layout.simple_list_item_2, characters)
-        listview.adapter = adapter
+        CharacterListView.adapter = adapter
     }
 
     override fun onDestroy() {
