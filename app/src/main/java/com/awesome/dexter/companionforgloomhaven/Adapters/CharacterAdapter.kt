@@ -7,18 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import com.awesome.dexter.companionforgloomhaven.characters.BaseCharacter
+import com.awesome.dexter.companionforgloomhaven.characters.Character
 
 /**
  * Created by Dan on 5/20/2017.
  */
-class CharacterAdapter(context: Context, layoutid: Int, characters: Array<BaseCharacter>):
-        ArrayAdapter<BaseCharacter>(context, layoutid, characters) {
+class CharacterAdapter(context: Context, layoutid: Int, characters: List<Character>):
+        ArrayAdapter<Character>(context, layoutid, characters) {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val rowView: View = parent.inflate(android.R.layout.simple_list_item_2)
         val name: TextView = rowView.findViewById(android.R.id.text1) as TextView
         val description: TextView = rowView.findViewById(android.R.id.text2) as TextView
-        val characterTarget = getItem(position) as BaseCharacter
+        val characterTarget = getItem(position)
 
         name.text = characterTarget.name
         description.text = "${characterTarget.getCharacterRace()} - Level ${characterTarget.level}"
