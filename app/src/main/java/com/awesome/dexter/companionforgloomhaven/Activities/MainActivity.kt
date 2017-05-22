@@ -1,26 +1,31 @@
 package com.awesome.dexter.companionforgloomhaven.Activities
 
 import android.app.AlertDialog
+import android.content.Intent
+import android.content.Intent.ACTION_SEND
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import com.awesome.dexter.companionforgloomhaven.Adapters.CharacterAdapter
-import com.awesome.dexter.companionforgloomhaven.R
 import com.awesome.dexter.companionforgloomhaven.R.id.deleteAllCharacters
 import com.awesome.dexter.companionforgloomhaven.R.layout.*
 import com.awesome.dexter.companionforgloomhaven.R.menu.*
-import com.awesome.dexter.companionforgloomhaven.characters.Character
-import com.awesome.dexter.companionforgloomhaven.characters.Race
-import com.awesome.dexter.companionforgloomhaven.characters.getDisplayString
+import com.awesome.dexter.companionforgloomhaven.Characters.Character
+import com.awesome.dexter.companionforgloomhaven.Characters.Race
+import com.awesome.dexter.companionforgloomhaven.Characters.getDisplayString
 import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.kotlinextensions.*
+import com.raizlabs.android.dbflow.sql.language.Update
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_new_character.view.*
+
+val CHARACTER_KEY: String = "CHARKEY"
 
 class MainActivity : AppCompatActivity() {
         var characters = mutableListOf<Character>()
@@ -43,6 +48,13 @@ class MainActivity : AppCompatActivity() {
                     Character("Ryan", Race.InoxBrute)))
         }
 
+        CharacterListView.onItemClickListener = AdapterView.OnItemClickListener{
+            _, _, pos, _->
+            val charActivity = Intent(this, CharacterActivity::class.java)
+            charActivity.putExtra(CHARACTER_KEY, pos)
+            startActivity(charActivity)
+            UpdateCharacterList()
+        }
 
         attachCharacterAddListener()
         UpdateCharacterList()

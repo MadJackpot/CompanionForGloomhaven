@@ -1,4 +1,4 @@
-package com.awesome.dexter.companionforgloomhaven.characters
+package com.awesome.dexter.companionforgloomhaven.Characters
 
 import com.awesome.dexter.companionforgloomhaven.Database.GloomhavenDatabase
 import com.raizlabs.android.dbflow.annotation.Column
@@ -19,8 +19,6 @@ open class Character(@Column var name: String = "", race: Race = Race.HumanScoun
     open fun getCharacterRace(): String {
         return Race.values()[race].getDisplayString()
     }
-
-    class CharacterException(message: String) : Exception(message)
 }
 
 enum class Race {HumanScoundrel, InoxBrute, OrchidSpellweaver, QuatrylTinkerer, SavvasCragheart, VermlingMindthief}
