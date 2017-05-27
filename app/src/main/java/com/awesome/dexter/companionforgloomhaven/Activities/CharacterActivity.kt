@@ -2,10 +2,12 @@ package com.awesome.dexter.companionforgloomhaven.Activities
 
 import android.app.Activity
 import android.os.Bundle
+import com.awesome.dexter.companionforgloomhaven.Characters.*
+import com.awesome.dexter.companionforgloomhaven.Characters.Character_Table.id
 import com.awesome.dexter.companionforgloomhaven.R.layout.activity_character
 import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.kotlinextensions.*
-import com.awesome.dexter.companionforgloomhaven.Characters.*
+import com.raizlabs.android.dbflow.sql.language.SQLite
 import kotlinx.android.synthetic.main.activity_character.*
 
 /**
@@ -20,8 +22,10 @@ class CharacterActivity : Activity(){
 
         FlowManager.init(this)
 
-        val character_id = intent.extras.getInt(CHARACTER_KEY)
-        //character = (select from Character::class where ( eq character_id) ).result ?: Character()
-        CharacterRace.text;
+        val characterId = intent.extras.getInt(CHARACTER_KEY)
+        SQLite.select().from(Character::class)
+        character = (select from Character::class where (id eq characterId)).result ?: Character()
+        title = character.name
+        CharacterRace.text = character.getCharacterRace()
     }
 }

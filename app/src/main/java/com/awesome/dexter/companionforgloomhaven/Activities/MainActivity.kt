@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         CharacterListView.onItemClickListener = AdapterView.OnItemClickListener{
             _, _, pos, _->
             val charActivity = Intent(this, CharacterActivity::class.java)
-            charActivity.putExtra(CHARACTER_KEY, pos)
+            charActivity.putExtra(CHARACTER_KEY, characters[pos].id)
             startActivity(charActivity)
             UpdateCharacterList()
         }
