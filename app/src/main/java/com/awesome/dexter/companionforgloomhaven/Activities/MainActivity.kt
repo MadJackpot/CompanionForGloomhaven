@@ -2,7 +2,6 @@ package com.awesome.dexter.companionforgloomhaven.Activities
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.content.Intent.ACTION_SEND
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
@@ -20,7 +19,6 @@ import com.awesome.dexter.companionforgloomhaven.Characters.Race
 import com.awesome.dexter.companionforgloomhaven.Characters.getDisplayString
 import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.kotlinextensions.*
-import com.raizlabs.android.dbflow.sql.language.Update
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_new_character.view.*
