@@ -17,33 +17,45 @@ import com.awesome.dexter.companionforgloomhaven.R.menu.*
 import com.awesome.dexter.companionforgloomhaven.Characters.Character
 import com.awesome.dexter.companionforgloomhaven.Characters.Race
 import com.awesome.dexter.companionforgloomhaven.Characters.getDisplayString
-import com.raizlabs.android.dbflow.config.FlowManager
-import com.raizlabs.android.dbflow.kotlinextensions.*
-import com.raizlabs.android.dbflow.structure.database.transaction.Transaction
+import com.awesome.dexter.companionforgloomhaven.Database.CharacterQueries
+import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_new_character.view.*
+import kotlin.properties.Delegates
 
 val CHARACTER_KEY: String = "CHARKEY"
 
 class MainActivity : AppCompatActivity() {
-        var characters = mutableListOf<Character>()
+    private var realm: Realm by Delegates.notNull()
+    var characters = mutableListOf<Character>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(activity_main)
+        Realm.init(this)
 
         title = "Gloomhaven Companion"
         setSupportActionBar(mainToolbar)
-        FlowManager.init(this)
 
-        characters = (select from Character::class).list
+        realm = Realm.getDefaultInstance()
+        characters = CharacterQueries.GetCharacters()
+
         if (characters.isEmpty()) {
-            characters.addAll(arrayOf(Character("Jonathan", Race.HumanScoundrel),
-                    Character("Dan", Race.SavvasCragheart),
-                    Character("Michele", Race.QuatrylTinkerer),
-                    Character("Kevin", Race.VermlingMindthief),
-                    Character("Michelle", Race.OrchidSpellweaver),
-                    Character("Ryan", Race.InoxBrute)))
+            realm.beginTransaction()
+            val chars = arrayOf(Character("Jonathan", Race.HumanScoundrel),
+                Character("Dan", Race.SavvasCragheart),
+                Character("Michele", Race.QuatrylTinkerer),
+                Character("Kevin", Race.VermlingMindthief),
+                Character("Michelle", Race.OrchidSpellweaver),
+                Character("Ryan", Race.InoxBrute))
+            for (c in chars){
+                var realmChar = realm.createObject(Character::class.java, chars.indexOf(c))
+                realmChar.name = c.name
+                realmChar.race = c.race
+                characters.add(realmChar)
+            }
+
+            realm.commitTransaction()
         }
 
         CharacterListView.onItemClickListener = AdapterView.OnItemClickListener{
@@ -58,11 +70,9 @@ class MainActivity : AppCompatActivity() {
         UpdateCharacterList()
     }
 
-    override fun onDestroy() {
-        characters.processInTransactionAsync({it, dbWrapper-> it.save(dbWrapper)}, Transaction.Success{})
-
+    /*override fun onDestroy() {
         super.onDestroy()
-    }
+    }*/
 
     fun attachCharacterAddListener() {
         addCharacterButton.setOnClickListener {
@@ -76,7 +86,12 @@ class MainActivity : AppCompatActivity() {
             builder.setView(newCharSetup)
             builder.setPositiveButton("OK", {
                 _, _ ->
-                characters.add(Character(newCharSetup.newCharacterName.text.toString(), Race.values()[newCharSetup.raceSpinner.selectedItemPosition]))
+                realm.executeTransaction {
+                    var character = realm.createObject(Character::class.java, CharacterQueries.GetNextID())
+                    character.name = newCharSetup.newCharacterName.text.toString()
+                    character.race = newCharSetup.raceSpinner.selectedItemPosition
+                    characters.add(character)
+                }
                 UpdateCharacterList()
             })
 
@@ -98,7 +113,7 @@ class MainActivity : AppCompatActivity() {
 
         when (item.itemId) {
             deleteAllCharacters -> {
-                characters.processInTransactionAsync({it, dbWrapper -> it.delete(dbWrapper)}, Transaction.Success{})
+                realm.executeTransaction { characters.forEach { it.deleteFromRealm() } }
                 characters.clear()
                 UpdateCharacterList()
             }
