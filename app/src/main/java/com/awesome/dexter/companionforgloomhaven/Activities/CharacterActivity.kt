@@ -1,9 +1,8 @@
 package com.awesome.dexter.companionforgloomhaven.Activities
 
-import android.app.Activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.awesome.dexter.companionforgloomhaven.Characters.*
+import com.awesome.dexter.companionforgloomhaven.Characters.Character
 import com.awesome.dexter.companionforgloomhaven.Characters.Character_Table.id
 import com.awesome.dexter.companionforgloomhaven.R.layout.activity_character
 import com.raizlabs.android.dbflow.config.FlowManager
