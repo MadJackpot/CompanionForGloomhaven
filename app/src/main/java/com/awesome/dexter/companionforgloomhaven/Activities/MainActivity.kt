@@ -11,14 +11,17 @@ import android.view.MenuItem
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import com.awesome.dexter.companionforgloomhaven.Adapters.CharacterAdapter
-import com.awesome.dexter.companionforgloomhaven.R.id.deleteAllCharacters
-import com.awesome.dexter.companionforgloomhaven.R.layout.*
-import com.awesome.dexter.companionforgloomhaven.R.menu.*
 import com.awesome.dexter.companionforgloomhaven.Characters.Character
 import com.awesome.dexter.companionforgloomhaven.Characters.Race
 import com.awesome.dexter.companionforgloomhaven.Characters.getDisplayString
 import com.awesome.dexter.companionforgloomhaven.Database.CharacterQueries
+import com.awesome.dexter.companionforgloomhaven.Database.Migration
+import com.awesome.dexter.companionforgloomhaven.R.id.deleteAllCharacters
+import com.awesome.dexter.companionforgloomhaven.R.layout.activity_main
+import com.awesome.dexter.companionforgloomhaven.R.layout.dialog_new_character
+import com.awesome.dexter.companionforgloomhaven.R.menu.main_menu
 import io.realm.Realm
+import io.realm.RealmConfiguration
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_new_character.view.*
 import kotlin.properties.Delegates
@@ -34,28 +37,28 @@ class MainActivity : AppCompatActivity() {
         setContentView(activity_main)
         Realm.init(this)
 
+        val config = RealmConfiguration.Builder()
+                .name("DBConfig")
+                .schemaVersion(0)
+                .migration(Migration())
+                .build()
+        Realm.setDefaultConfiguration(config)
+        realm = Realm.getDefaultInstance()
+
         title = "Gloomhaven Companion"
         setSupportActionBar(mainToolbar)
 
-        realm = Realm.getDefaultInstance()
         characters = CharacterQueries.GetCharacters()
 
         if (characters.isEmpty()) {
-            realm.beginTransaction()
-            val chars = arrayOf(Character("Jonathan", Race.HumanScoundrel),
+            arrayOf(Character("Jonathan", Race.HumanScoundrel),
                 Character("Dan", Race.SavvasCragheart),
                 Character("Michele", Race.QuatrylTinkerer),
                 Character("Kevin", Race.VermlingMindthief),
                 Character("Michelle", Race.OrchidSpellweaver),
-                Character("Ryan", Race.InoxBrute))
-            for (c in chars){
-                var realmChar = realm.createObject(Character::class.java, chars.indexOf(c))
-                realmChar.name = c.name
-                realmChar.race = c.race
-                characters.add(realmChar)
-            }
-
-            realm.commitTransaction()
+                Character("Ryan", Race.InoxBrute)).forEach{
+                    characters.add(CharacterQueries.CreateNewCharacter(it.name, it.race))
+                    }
         }
 
         CharacterListView.onItemClickListener = AdapterView.OnItemClickListener{
@@ -70,10 +73,6 @@ class MainActivity : AppCompatActivity() {
         UpdateCharacterList()
     }
 
-    /*override fun onDestroy() {
-        super.onDestroy()
-    }*/
-
     fun attachCharacterAddListener() {
         addCharacterButton.setOnClickListener {
             var builder = AlertDialog.Builder(this)
@@ -86,17 +85,14 @@ class MainActivity : AppCompatActivity() {
             builder.setView(newCharSetup)
             builder.setPositiveButton("OK", {
                 _, _ ->
-                realm.executeTransaction {
-                    var character = realm.createObject(Character::class.java, CharacterQueries.GetNextID())
-                    character.name = newCharSetup.newCharacterName.text.toString()
-                    character.race = newCharSetup.raceSpinner.selectedItemPosition
-                    characters.add(character)
-                }
+                    characters.add(CharacterQueries.CreateNewCharacter(newCharSetup.newCharacterName.text.toString(),
+                            newCharSetup.raceSpinner.selectedItemPosition))
                 UpdateCharacterList()
             })
 
             var alert = builder.create()
             alert.show()
+
         }
     }
 
@@ -113,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
         when (item.itemId) {
             deleteAllCharacters -> {
-                realm.executeTransaction { characters.forEach { it.deleteFromRealm() } }
+                realm.executeTransaction{ characters.forEach{ it.deleteFromRealm() } }
                 characters.clear()
                 UpdateCharacterList()
             }
